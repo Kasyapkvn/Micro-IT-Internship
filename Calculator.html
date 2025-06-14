@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Improved CALCULATOR</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+            box-sizing: border-box;
+        }
+        .container {
+            width: 100%;
+            height: 100vh;
+            background: #e3f9ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .calculator {
+            background-color: #3a4452;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .calculator form input {
+            border: 0;
+            outline: 0;
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            box-shadow: -8px -8px 15px rgba(255, 255, 255, 0.1), 5px 5px 15px rgba(0, 0, 0, 0.2);
+            background: transparent;
+            font-size: 20px;
+            color: #fff;
+            cursor: pointer;
+            margin: 10px;
+        }
+        form .display {
+            display: flex;
+            justify-content: flex-end;
+            margin: 20px 0;
+        }
+        form .display input {
+            text-align: right;
+            flex: 1;
+            font-size: 45px;
+            box-shadow: none;
+            pointer-events: none; /* Prevents direct typing into the display */
+        }
+        form input.equal {
+            width: 145px;
+        }
+        form input.operator {
+            color: #33ffd8;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="calculator">
+        <form>
+            <div class="display">
+                <input type="text" name="display" id="display" readonly>
+            </div>
+            <div>
+                <input type="button" value="AC" class="operator">
+                <input type="button" value="DE" class="operator">
+                <input type="button" value="." class="operator">
+                <input type="button" value="/" class="operator">
+            </div>
+            <div>
+                <input type="button" value="7">
+                <input type="button" value="8">
+                <input type="button" value="9">
+                <input type="button" value="*" class="operator">
+            </div>
+            <div>
+                <input type="button" value="4">
+                <input type="button" value="5">
+                <input type="button" value="6">
+                <input type="button" value="-" class="operator">
+            </div>
+            <div>
+                <input type="button" value="1">
+                <input type="button" value="2">
+                <input type="button" value="3">
+                <input type="button" value="+" class="operator">
+            </div>
+            <div>
+                <input type="button" value="00">
+                <input type="button" value="0">
+                <input type="button" value="=" class="equal operator">
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    const display = document.getElementById('display');
+    const buttons = document.querySelectorAll('input[type="button"]');
+    let isResultDisplayed = false;
+
+    // Function to handle all button clicks
+    function handleButtonClick(value) {
+        const lastChar = display.value.slice(-1);
+
+        if (value === '=') {
+            calculate();
+        } else if (value === 'AC') {
+            clearDisplay();
+        } else if (value === 'DE') {
+            deleteLast();
+        } else {
+            appendToDisplay(value, lastChar);
+        }
+    }
+    
+    // Append value to the display
+    function appendToDisplay(value, lastChar) {
+        const operators = ['+', '-', '*', '/'];
+
+        // If a result is already shown, clear display before adding new number
+        if (isResultDisplayed && !operators.includes(value)) {
+            display.value = '';
+            isResultDisplayed = false;
+        }
+        
+        // Prevent adding multiple operators consecutively
+        if (operators.includes(lastChar) && operators.includes(value)) {
+            return;
+        }
+
+        display.value += value;
+    }
+
+    // Clear the display
+    function clearDisplay() {
+        display.value = '';
+    }
+
+    // Delete the last character
+    function deleteLast() {
+        display.value = display.value.slice(0, -1);
+        isResultDisplayed = false;
+    }
+
+    // Perform calculation safely without eval()
+    function calculate() {
+        if (display.value === '' || display.value.endsWith('/0')) {
+             display.value = 'Error';
+             return;
+        }
+        try {
+            // A safer way to evaluate mathematical expressions than eval()
+            const result = new Function('return ' + display.value)();
+            if (isNaN(result) || !isFinite(result)) {
+                display.value = 'Error';
+            } else {
+                display.value = result;
+            }
+            isResultDisplayed = true;
+        } catch (error) {
+            display.value = 'Error';
+        }
+    }
+
+    // Add event listeners for mouse clicks
+    buttons.forEach(button => {
+        button.addEventListener('click', (e) => {
+            handleButtonClick(e.target.value);
+        });
+    });
+
+    // Add event listeners for keyboard input
+    document.addEventListener('keydown', (e) => {
+        const key = e.key;
+        
+        if (key >= '0' && key <= '9' || key === '.') {
+            handleButtonClick(key);
+        } else if (key === '+' || key === '-' || key === '*' || key === '/') {
+            handleButtonClick(key);
+        } else if (key === 'Enter' || key === '=') {
+            e.preventDefault(); // Prevent form submission
+            handleButtonClick('=');
+        } else if (key === 'Backspace') {
+            handleButtonClick('DE');
+        } else if (key === 'Escape') {
+            handleButtonClick('AC');
+        }
+    });
+
+</script>
+</body>
+</html>
